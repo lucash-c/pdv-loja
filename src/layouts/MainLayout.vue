@@ -241,7 +241,6 @@ const clearStoreSession = () => {
   authStore.selectedLoja = null;
   authStore.loja = null;
   authStore.userLoja = null;
-  authStore.isStoreOpen = false;
   storeSettings.value = null;
 
   localStorage.removeItem("store_token");
@@ -303,7 +302,10 @@ const syncStoreSettings = async () => {
     if (settings && typeof settings === "object") {
       storeSettings.value = settings;
       if (typeof settings.is_open === "boolean")
-        authStore.isStoreOpen = settings.is_open;
+        authStore.loja = {
+          ...(authStore.loja || {}),
+          is_open: settings.is_open,
+        };
     }
   } catch (e) {
     console.warn("Falha ao obter store-settings", e);

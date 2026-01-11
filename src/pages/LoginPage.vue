@@ -101,11 +101,7 @@
           </q-banner>
         </q-card-section>
 
-        <q-card-section class="q-pt-none">
-          <div class="text-caption text-grey-7">
-            Ao entrar, você poderá selecionar a loja vinculada à sua conta.
-          </div>
-        </q-card-section>
+        <q-card-section class="q-pt-none"> </q-card-section>
       </q-card>
 
       <div class="text-caption text-grey-6 q-mt-md text-center">

@@ -105,6 +105,16 @@
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
+            v-if="props.row.has_options"
+            flat
+            round
+            color="secondary"
+            icon="tune"
+            @click="openOptionsDialog(props.row)"
+          >
+            <q-tooltip>Opções</q-tooltip>
+          </q-btn>
+          <q-btn
             flat
             round
             color="primary"
@@ -208,6 +218,306 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="optionsDialogOpen">
+      <q-card class="options-dialog">
+        <q-card-section class="row items-center q-pb-none">
+          <div>
+            <div class="text-h6">Opções do produto</div>
+            <div class="text-caption text-grey-7">
+              {{ selectedProduct?.name || "Produto" }}
+            </div>
+          </div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pt-md">
+          <div class="row items-center q-mb-sm">
+            <q-btn
+              color="primary"
+              icon="add"
+              label="Nova opção"
+              @click="openOptionForm()"
+            />
+            <q-space />
+            <q-btn
+              flat
+              color="primary"
+              icon="refresh"
+              :loading="optionsLoading"
+              @click="loadOptions"
+            />
+          </div>
+
+          <q-inner-loading :showing="optionsLoading" />
+
+          <q-list v-if="options.length" bordered class="rounded-borders">
+            <q-item v-for="option in options" :key="option.id">
+              <q-item-section>
+                <div class="text-weight-medium">
+                  {{ option.name || "Opção" }}
+                </div>
+                <div class="text-caption text-grey-7">
+                  Tipo: {{ option.typeLabel }}
+                  <span v-if="option.required"> • Obrigatória</span>
+                  <span v-if="option.min_choices !== null">
+                    • Mín. {{ option.min_choices }}
+                  </span>
+                  <span v-if="option.max_choices !== null">
+                    • Máx. {{ option.max_choices }}
+                  </span>
+                </div>
+              </q-item-section>
+              <q-item-section side class="items-center">
+                <q-btn
+                  flat
+                  round
+                  color="secondary"
+                  icon="inventory_2"
+                  @click="openItemsDialog(option)"
+                >
+                  <q-tooltip>Itens</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  color="primary"
+                  icon="edit"
+                  @click="openOptionForm(option)"
+                >
+                  <q-tooltip>Editar</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  color="negative"
+                  icon="delete"
+                  @click="confirmDeleteOption(option)"
+                >
+                  <q-tooltip>Excluir</q-tooltip>
+                </q-btn>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <div v-else class="text-grey-6 text-center q-pa-md">
+            Nenhuma opção cadastrada.
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="optionFormOpen">
+      <q-card class="option-form-dialog">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">
+            {{ optionForm.id ? "Editar opção" : "Nova opção" }}
+          </div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pt-md">
+          <q-form @submit.prevent="saveOption">
+            <q-input
+              v-model="optionForm.name"
+              label="Nome"
+              outlined
+              dense
+              :rules="[(v) => !!v || 'Informe o nome']"
+            />
+
+            <q-select
+              v-model="optionForm.type"
+              :options="optionTypeOptions"
+              option-label="label"
+              option-value="value"
+              emit-value
+              map-options
+              label="Tipo"
+              outlined
+              dense
+              class="q-mt-sm"
+            />
+
+            <div class="row q-col-gutter-md q-mt-sm">
+              <div class="col-12 col-md-6">
+                <q-input
+                  v-model.number="optionForm.min_choices"
+                  label="Mínimo de escolhas"
+                  outlined
+                  dense
+                  type="number"
+                  min="0"
+                />
+              </div>
+              <div class="col-12 col-md-6">
+                <q-input
+                  v-model.number="optionForm.max_choices"
+                  label="Máximo de escolhas"
+                  outlined
+                  dense
+                  type="number"
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <q-toggle
+              v-model="optionForm.required"
+              label="Obrigatória"
+              class="q-mt-sm"
+            />
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Cancelar" v-close-popup />
+          <q-btn
+            color="primary"
+            label="Salvar"
+            :loading="optionSaving"
+            @click="saveOption"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="itemsDialogOpen">
+      <q-card class="items-dialog">
+        <q-card-section class="row items-center q-pb-none">
+          <div>
+            <div class="text-h6">Itens da opção</div>
+            <div class="text-caption text-grey-7">
+              {{ selectedOption?.name || "Opção" }}
+            </div>
+          </div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pt-md">
+          <div class="row items-center q-mb-sm">
+            <q-btn
+              color="primary"
+              icon="add"
+              label="Novo item"
+              @click="openItemForm()"
+            />
+            <q-space />
+            <q-btn
+              flat
+              color="primary"
+              icon="refresh"
+              :loading="itemsLoading"
+              @click="loadItems"
+            />
+          </div>
+
+          <q-inner-loading :showing="itemsLoading" />
+
+          <q-list v-if="optionItems.length" bordered class="rounded-borders">
+            <q-item v-for="item in optionItems" :key="item.id">
+              <q-item-section>
+                <div class="text-weight-medium">
+                  {{ item.name || "Item" }}
+                </div>
+                <div class="text-caption text-grey-7">
+                  {{ formatMoney(item.price) }}
+                  <span>
+                    • {{ item.is_active ? "Ativo" : "Inativo" }}
+                  </span>
+                </div>
+              </q-item-section>
+              <q-item-section side class="items-center">
+                <q-btn
+                  flat
+                  round
+                  color="primary"
+                  icon="edit"
+                  @click="openItemForm(item)"
+                >
+                  <q-tooltip>Editar</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  color="negative"
+                  icon="delete"
+                  @click="confirmDeleteItem(item)"
+                >
+                  <q-tooltip>Excluir</q-tooltip>
+                </q-btn>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <div v-else class="text-grey-6 text-center q-pa-md">
+            Nenhum item cadastrado.
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="itemFormOpen">
+      <q-card class="item-form-dialog">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">
+            {{ itemForm.id ? "Editar item" : "Novo item" }}
+          </div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pt-md">
+          <q-form @submit.prevent="saveItem">
+            <q-input
+              v-model="itemForm.name"
+              label="Nome"
+              outlined
+              dense
+              :rules="[(v) => !!v || 'Informe o nome']"
+            />
+
+            <q-input
+              v-model.number="itemForm.price"
+              label="Preço"
+              outlined
+              dense
+              type="number"
+              step="0.01"
+              min="0"
+              class="q-mt-sm"
+            />
+
+            <q-toggle
+              v-model="itemForm.is_active"
+              label="Item ativo"
+              class="q-mt-sm"
+            />
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Cancelar" v-close-popup />
+          <q-btn
+            color="primary"
+            label="Salvar"
+            :loading="itemSaving"
+            @click="saveItem"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -221,12 +531,24 @@ const saving = ref(false);
 const dialogOpen = ref(false);
 const search = ref("");
 const showInactive = ref(false);
+const optionsDialogOpen = ref(false);
+const optionsLoading = ref(false);
+const optionFormOpen = ref(false);
+const optionSaving = ref(false);
+const itemsDialogOpen = ref(false);
+const itemsLoading = ref(false);
+const itemFormOpen = ref(false);
+const itemSaving = ref(false);
 
 const pagination = {
   rowsPerPage: 10,
 };
 
 const products = ref([]);
+const options = ref([]);
+const optionItems = ref([]);
+const selectedProduct = ref(null);
+const selectedOption = ref(null);
 
 const form = ref({
   id: null,
@@ -238,12 +560,33 @@ const form = ref({
   is_active: true,
 });
 
+const optionForm = ref({
+  id: null,
+  name: "",
+  type: "multiple",
+  required: false,
+  min_choices: null,
+  max_choices: null,
+});
+
+const itemForm = ref({
+  id: null,
+  name: "",
+  price: null,
+  is_active: true,
+});
+
 const columns = [
   { name: "name", label: "Produto", field: "name", align: "left" },
   { name: "price", label: "Preço", field: "base_price", align: "left" },
   { name: "status", label: "Status", field: "is_active", align: "left" },
   { name: "options", label: "Opções", field: "has_options", align: "left" },
   { name: "actions", label: "Ações", field: "actions", align: "right" },
+];
+
+const optionTypeOptions = [
+  { label: "Escolha única", value: "single" },
+  { label: "Múltiplas escolhas", value: "multiple" },
 ];
 
 const notify = ({ type = "info", message = "" } = {}) => {
@@ -268,6 +611,39 @@ const normalizeProduct = (p) => {
       p?.is_active ?? p?.isActive ?? p?.active ?? statusActive ?? true,
   };
 };
+
+const getOptionTypeLabel = (type) => {
+  if (type === "single") return "Escolha única";
+  if (type === "multiple") return "Múltiplas escolhas";
+  return type || "Não informado";
+};
+
+const normalizeOption = (option) => ({
+  id: option?.id ?? option?._id ?? option?.option_id ?? null,
+  name: option?.name ?? option?.title ?? "",
+  type: option?.type ?? option?.option_type ?? "multiple",
+  typeLabel: getOptionTypeLabel(option?.type ?? option?.option_type),
+  required: Boolean(option?.required ?? option?.is_required ?? false),
+  min_choices:
+    option?.min_choices ??
+    option?.minChoices ??
+    option?.min ??
+    option?.minimo ??
+    null,
+  max_choices:
+    option?.max_choices ??
+    option?.maxChoices ??
+    option?.max ??
+    option?.maximo ??
+    null,
+});
+
+const normalizeItem = (item) => ({
+  id: item?.id ?? item?._id ?? item?.item_id ?? null,
+  name: item?.name ?? item?.title ?? "",
+  price: item?.price ?? item?.value ?? item?.valor ?? 0,
+  is_active: item?.is_active ?? item?.isActive ?? true,
+});
 
 const filteredProducts = computed(() => {
   const q = String(search.value || "")
@@ -301,6 +677,26 @@ const resetForm = () => {
   };
 };
 
+const resetOptionForm = () => {
+  optionForm.value = {
+    id: null,
+    name: "",
+    type: "multiple",
+    required: false,
+    min_choices: null,
+    max_choices: null,
+  };
+};
+
+const resetItemForm = () => {
+  itemForm.value = {
+    id: null,
+    name: "",
+    price: null,
+    is_active: true,
+  };
+};
+
 const openCreateDialog = () => {
   resetForm();
   dialogOpen.value = true;
@@ -309,6 +705,56 @@ const openCreateDialog = () => {
 const openEditDialog = (product) => {
   form.value = { ...product };
   dialogOpen.value = true;
+};
+
+const openOptionsDialog = (product) => {
+  selectedProduct.value = product;
+  optionsDialogOpen.value = true;
+  options.value = [];
+  void loadOptions();
+};
+
+const openOptionForm = (option = null) => {
+  if (option) {
+    optionForm.value = {
+      id: option.id,
+      name: option.name,
+      type: option.type || "multiple",
+      required: Boolean(option.required),
+      min_choices: option.min_choices ?? null,
+      max_choices: option.max_choices ?? null,
+    };
+  } else {
+    resetOptionForm();
+  }
+  optionFormOpen.value = true;
+};
+
+const openItemsDialog = (option) => {
+  selectedOption.value = option;
+  itemsDialogOpen.value = true;
+  optionItems.value = [];
+  void loadItems();
+};
+
+const openItemForm = (item = null) => {
+  if (item) {
+    itemForm.value = {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      is_active: Boolean(item.is_active),
+    };
+  } else {
+    resetItemForm();
+  }
+  itemFormOpen.value = true;
+};
+
+const normalizeChoiceValue = (value) => {
+  if (value === "" || value === null || value === undefined) return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
 };
 
 const refresh = async () => {
@@ -327,6 +773,44 @@ const refresh = async () => {
     });
   } finally {
     loading.value = false;
+  }
+};
+
+const loadOptions = async () => {
+  if (!selectedProduct.value?.id) return;
+  optionsLoading.value = true;
+  try {
+    const { data } = await apiService.listOpcoesProduto(
+      selectedProduct.value.id
+    );
+    const list = data?.data ?? data?.options ?? data ?? [];
+    options.value = Array.isArray(list) ? list.map(normalizeOption) : [];
+  } catch (error) {
+    console.warn("Falha ao carregar opções", error);
+    notify({
+      type: "negative",
+      message: "Não foi possível carregar as opções.",
+    });
+  } finally {
+    optionsLoading.value = false;
+  }
+};
+
+const loadItems = async () => {
+  if (!selectedOption.value?.id) return;
+  itemsLoading.value = true;
+  try {
+    const { data } = await apiService.listItensOpcao(selectedOption.value.id);
+    const list = data?.data ?? data?.items ?? data ?? [];
+    optionItems.value = Array.isArray(list) ? list.map(normalizeItem) : [];
+  } catch (error) {
+    console.warn("Falha ao carregar itens da opção", error);
+    notify({
+      type: "negative",
+      message: "Não foi possível carregar os itens da opção.",
+    });
+  } finally {
+    itemsLoading.value = false;
   }
 };
 
@@ -363,6 +847,78 @@ const saveProduct = async () => {
   }
 };
 
+const saveOption = async () => {
+  if (!selectedProduct.value?.id) return;
+  optionSaving.value = true;
+  try {
+    const payload = {
+      name: optionForm.value.name,
+      type: optionForm.value.type,
+      required: Boolean(optionForm.value.required),
+      min_choices: normalizeChoiceValue(optionForm.value.min_choices),
+      max_choices: normalizeChoiceValue(optionForm.value.max_choices),
+    };
+
+    if (optionForm.value.id) {
+      await apiService.updateOpcaoProduto(
+        selectedProduct.value.id,
+        optionForm.value.id,
+        payload
+      );
+      notify({ type: "positive", message: "Opção atualizada." });
+    } else {
+      await apiService.createOpcaoProduto(selectedProduct.value.id, payload);
+      notify({ type: "positive", message: "Opção criada." });
+    }
+
+    optionFormOpen.value = false;
+    await loadOptions();
+  } catch (error) {
+    console.warn("Falha ao salvar opção", error);
+    notify({
+      type: "negative",
+      message: "Não foi possível salvar a opção.",
+    });
+  } finally {
+    optionSaving.value = false;
+  }
+};
+
+const saveItem = async () => {
+  if (!selectedOption.value?.id) return;
+  itemSaving.value = true;
+  try {
+    const payload = {
+      name: itemForm.value.name,
+      price: Number(itemForm.value.price || 0),
+      is_active: Boolean(itemForm.value.is_active),
+    };
+
+    if (itemForm.value.id) {
+      await apiService.updateItemOpcao(
+        selectedOption.value.id,
+        itemForm.value.id,
+        payload
+      );
+      notify({ type: "positive", message: "Item atualizado." });
+    } else {
+      await apiService.createItemOpcao(selectedOption.value.id, payload);
+      notify({ type: "positive", message: "Item criado." });
+    }
+
+    itemFormOpen.value = false;
+    await loadItems();
+  } catch (error) {
+    console.warn("Falha ao salvar item", error);
+    notify({
+      type: "negative",
+      message: "Não foi possível salvar o item.",
+    });
+  } finally {
+    itemSaving.value = false;
+  }
+};
+
 const confirmDisable = (product) => {
   Dialog.create({
     title: "Desativar produto",
@@ -371,6 +927,56 @@ const confirmDisable = (product) => {
     persistent: true,
     ok: { label: "Desativar", color: "negative" },
   }).onOk(() => disableProduct(product));
+};
+
+const confirmDeleteOption = (option) => {
+  Dialog.create({
+    title: "Excluir opção",
+    message: `Deseja excluir ${option.name}?`,
+    cancel: true,
+    persistent: true,
+    ok: { label: "Excluir", color: "negative" },
+  }).onOk(() => deleteOption(option));
+};
+
+const deleteOption = async (option) => {
+  if (!selectedProduct.value?.id) return;
+  try {
+    await apiService.deleteOpcaoProduto(selectedProduct.value.id, option.id);
+    notify({ type: "positive", message: "Opção excluída." });
+    await loadOptions();
+  } catch (error) {
+    console.warn("Falha ao excluir opção", error);
+    notify({
+      type: "negative",
+      message: "Não foi possível excluir a opção.",
+    });
+  }
+};
+
+const confirmDeleteItem = (item) => {
+  Dialog.create({
+    title: "Excluir item",
+    message: `Deseja excluir ${item.name}?`,
+    cancel: true,
+    persistent: true,
+    ok: { label: "Excluir", color: "negative" },
+  }).onOk(() => deleteItem(item));
+};
+
+const deleteItem = async (item) => {
+  if (!selectedOption.value?.id) return;
+  try {
+    await apiService.deleteItemOpcao(selectedOption.value.id, item.id);
+    notify({ type: "positive", message: "Item excluído." });
+    await loadItems();
+  } catch (error) {
+    console.warn("Falha ao excluir item", error);
+    notify({
+      type: "negative",
+      message: "Não foi possível excluir o item.",
+    });
+  }
 };
 
 const disableProduct = async (product) => {
@@ -400,6 +1006,15 @@ onMounted(() => {
 .product-dialog {
   width: 100%;
   max-width: 640px;
+  border-radius: 14px;
+}
+
+.options-dialog,
+.items-dialog,
+.option-form-dialog,
+.item-form-dialog {
+  width: 100%;
+  max-width: 720px;
   border-radius: 14px;
 }
 </style>

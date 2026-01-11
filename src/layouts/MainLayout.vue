@@ -145,6 +145,7 @@ const storeActionLoading = ref(false);
  */
 const navItems = [
   { to: "/dashboard", icon: "dashboard", label: "Dashboard" },
+  { to: "/pdv", icon: "point_of_sale", label: "PDV" },
   { to: "/pedidos", icon: "receipt_long", label: "Pedidos" },
   { to: "/produtos", icon: "inventory_2", label: "Produtos" },
   { to: "/loja", icon: "store", label: "Loja" },

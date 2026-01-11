@@ -7,6 +7,7 @@ const MainLayout = () => import('src/layouts/MainLayout.vue')
 const LoginPage = () => import('src/pages/LoginPage.vue')
 const SelectLojaPage = () => import('src/pages/SelectLojaPage.vue')
 const DashboardPage = () => import('src/pages/DashboardPage.vue')
+const PdvPage = () => import('src/pages/PdvPage.vue')
 const PedidosPage = () => import('src/pages/PedidosPage.vue')
 const ProdutosPage = () => import('src/pages/ProdutosPage.vue')
 const LojaPage = () => import('src/pages/LojaPage.vue')
@@ -34,6 +35,12 @@ const routes = [
         path: 'dashboard',
         name: 'dashboard',
         component: DashboardPage,
+        meta: { requiresStoreAuth: true }
+      },
+      {
+        path: 'pdv',
+        name: 'pdv',
+        component: PdvPage,
         meta: { requiresStoreAuth: true }
       },
       {

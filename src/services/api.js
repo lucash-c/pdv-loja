@@ -87,6 +87,14 @@ export default {
   // =========================
   // PEDIDOS (ADMIN/PDV)
   // =========================
+  createPedidoPublic(publicKey, data) {
+    return api.post('/api/orders', data, {
+      headers: {
+        'X-LOJA-KEY': publicKey
+      }
+    })
+  },
+
   listPedidos(params = {}) {
     return api.get('/api/orders', { params })
   },
@@ -185,28 +193,28 @@ export default {
   // =========================
   async listItensOpcao(optionId) {
     return requestWithFallback(
-      () => api.get(`/api/products/options/${optionId}/items`),
+      () => api.get(`/products/options/${optionId}/items`),
       () => api.get(`/options/${optionId}/items`)
     )
   },
 
   async createItemOpcao(optionId, data) {
     return requestWithFallback(
-      () => api.post(`/api/products/options/${optionId}/items`, data),
+      () => api.post(`/products/options/${optionId}/items`, data),
       () => api.post(`/options/${optionId}/items`, data)
     )
   },
 
   async updateItemOpcao(optionId, itemId, data) {
     return requestWithFallback(
-      () => api.put(`/api/products/options/${optionId}/items/${itemId}`, data),
+      () => api.put(`/products/options/${optionId}/items/${itemId}`, data),
       () => api.put(`/options/${optionId}/items/${itemId}`, data)
     )
   },
 
   async deleteItemOpcao(optionId, itemId) {
     return requestWithFallback(
-      () => api.delete(`/api/products/options/${optionId}/items/${itemId}`),
+      () => api.delete(`/products/options/${optionId}/items/${itemId}`),
       () => api.delete(`/options/${optionId}/items/${itemId}`)
     )
   },

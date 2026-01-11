@@ -9,7 +9,6 @@
         outline
         color="primary"
         icon="refresh"
-        label="Atualizar"
         :loading="loading"
         class="q-mr-sm"
         @click="refresh"
@@ -431,9 +430,7 @@
                 </div>
                 <div class="text-caption text-grey-7">
                   {{ formatMoney(item.price) }}
-                  <span>
-                    • {{ item.is_active ? "Ativo" : "Inativo" }}
-                  </span>
+                  <span> • {{ item.is_active ? "Ativo" : "Inativo" }} </span>
                 </div>
               </q-item-section>
               <q-item-section side class="items-center">
@@ -607,8 +604,7 @@ const normalizeProduct = (p) => {
       p?.base_price ?? p?.basePrice ?? p?.price ?? p?.value ?? p?.valor ?? 0,
     image_url: p?.image_url ?? p?.imageUrl ?? p?.image ?? "",
     has_options: Boolean(p?.has_options ?? p?.hasOptions ?? p?.options?.length),
-    is_active:
-      p?.is_active ?? p?.isActive ?? p?.active ?? statusActive ?? true,
+    is_active: p?.is_active ?? p?.isActive ?? p?.active ?? statusActive ?? true,
   };
 };
 
@@ -762,9 +758,7 @@ const refresh = async () => {
   try {
     const { data } = await apiService.getProdutos();
     const list = data?.data ?? data?.products ?? data ?? [];
-    products.value = Array.isArray(list)
-      ? list.map(normalizeProduct)
-      : [];
+    products.value = Array.isArray(list) ? list.map(normalizeProduct) : [];
   } catch (error) {
     console.warn("Falha ao carregar produtos", error);
     notify({

@@ -8,7 +8,7 @@ const LoginPage = () => import('src/pages/LoginPage.vue')
 const SelectLojaPage = () => import('src/pages/SelectLojaPage.vue')
 const DashboardPage = () => import('src/pages/DashboardPage.vue')
 const PedidosPage = () => import('src/pages/PedidosPage.vue')
-// const ProdutosPage = () => import('src/pages/ProdutosPage.vue')
+const ProdutosPage = () => import('src/pages/ProdutosPage.vue')
 // const ConfiguracoesPage = () => import('src/pages/configuracoes/ConfiguracoesPage.vue')
 const ErrorNotFound = () => import('src/pages/ErrorNotFound.vue')
 
@@ -40,6 +40,12 @@ const routes = [
         path: 'pedidos',
         name: 'pedidos',
         component: PedidosPage,
+        meta: { requiresStoreAuth: true }
+      },
+      {
+        path: 'produtos',
+        name: 'produtos',
+        component: ProdutosPage,
         meta: { requiresStoreAuth: true }
       }
       /*

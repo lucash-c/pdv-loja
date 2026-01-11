@@ -9,7 +9,6 @@
         outline
         color="primary"
         icon="refresh"
-        label="Atualizar"
         :loading="loading"
         @click="refresh"
       />

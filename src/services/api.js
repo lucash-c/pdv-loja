@@ -166,6 +166,20 @@ export default {
     )
   },
 
+  async updateOpcaoProduto(productId, optionId, data) {
+    return requestWithFallback(
+      () => api.put(`/api/products/${productId}/options/${optionId}`, data),
+      () => api.put(`/products/${productId}/options/${optionId}`, data)
+    )
+  },
+
+  async deleteOpcaoProduto(productId, optionId) {
+    return requestWithFallback(
+      () => api.delete(`/api/products/${productId}/options/${optionId}`),
+      () => api.delete(`/products/${productId}/options/${optionId}`)
+    )
+  },
+
   // =========================
   // ITENS DA OPÇÃO
   // =========================
@@ -180,6 +194,20 @@ export default {
     return requestWithFallback(
       () => api.post(`/api/products/options/${optionId}/items`, data),
       () => api.post(`/options/${optionId}/items`, data)
+    )
+  },
+
+  async updateItemOpcao(optionId, itemId, data) {
+    return requestWithFallback(
+      () => api.put(`/api/products/options/${optionId}/items/${itemId}`, data),
+      () => api.put(`/options/${optionId}/items/${itemId}`, data)
+    )
+  },
+
+  async deleteItemOpcao(optionId, itemId) {
+    return requestWithFallback(
+      () => api.delete(`/api/products/options/${optionId}/items/${itemId}`),
+      () => api.delete(`/options/${optionId}/items/${itemId}`)
     )
   },
 

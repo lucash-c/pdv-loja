@@ -471,15 +471,78 @@ const formatOptionsGroup = (group) => {
       group?.options ||
       group?.option_items ||
       group?.selected_items ||
+      group?.selectedItems ||
+      group?.items_selected ||
+      group?.selected_options ||
+      group?.selectedOptions ||
       [];
+    const inlineItem =
+      group?.item_name ||
+      group?.itemName ||
+      group?.item?.name ||
+      group?.item?.title ||
+      null;
     const itemsText = Array.isArray(groupItems)
       ? groupItems.map(formatOptionEntry).filter(Boolean).join(", ")
       : formatOptionEntry(groupItems);
     if (groupName && itemsText) return `${groupName}: ${itemsText}`;
-    return itemsText || groupName;
+    if (groupName && inlineItem) return `${groupName}: ${inlineItem}`;
+    return itemsText || inlineItem || groupName;
   }
 
   return null;
+};
+
+const formatFlatSelections = (raw) => {
+  const grouped = new Map();
+
+  raw.forEach((entry) => {
+    if (!entry || typeof entry !== "object") return;
+    const optionLabel =
+      entry?.option_name ||
+      entry?.optionName ||
+      entry?.option?.name ||
+      entry?.option?.title ||
+      entry?.option?.label ||
+      entry?.group ||
+      entry?.name ||
+      null;
+    const optionKey =
+      entry?.option_id || entry?.optionId || optionLabel || "Opções";
+    const itemLabel =
+      entry?.item_name ||
+      entry?.itemName ||
+      entry?.item?.name ||
+      entry?.item?.title ||
+      entry?.name ||
+      entry?.label ||
+      null;
+    const price =
+      entry?.price ??
+      entry?.unit_price ??
+      entry?.valor ??
+      entry?.amount ??
+      null;
+    const itemText =
+      itemLabel && price
+        ? `${itemLabel} (${formatMoney(price)})`
+        : itemLabel || (price ? formatMoney(price) : null);
+    if (!itemText) return;
+
+    if (!grouped.has(optionKey)) {
+      grouped.set(optionKey, { name: optionLabel, items: [] });
+    }
+    grouped.get(optionKey).items.push(itemText);
+  });
+
+  return Array.from(grouped.values())
+    .map((group) => {
+      const itemsText = group.items.join(", ");
+      if (group.name && itemsText) return `${group.name}: ${itemsText}`;
+      return itemsText || group.name;
+    })
+    .filter(Boolean)
+    .join("\n");
 };
 
 const formatItemOptions = (it) => {
@@ -498,6 +561,25 @@ const formatItemOptions = (it) => {
   if (!raw) return null;
 
   if (Array.isArray(raw)) {
+    const hasFlatSelections = raw.some(
+      (entry) =>
+        entry &&
+        typeof entry === "object" &&
+        (entry?.option_name ||
+          entry?.optionName ||
+          entry?.option_id ||
+          entry?.optionId ||
+          entry?.option) &&
+        (entry?.item_name ||
+          entry?.itemName ||
+          entry?.item_id ||
+          entry?.itemId ||
+          entry?.item)
+    );
+    if (hasFlatSelections) {
+      const flatText = formatFlatSelections(raw);
+      if (flatText) return flatText;
+    }
     return raw.map(formatOptionsGroup).filter(Boolean).join("\n");
   }
 

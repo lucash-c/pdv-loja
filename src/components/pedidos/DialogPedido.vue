@@ -104,9 +104,13 @@
                         >
                         {{ itemName(it) }}
                       </q-item-label>
-                      <q-item-label caption v-if="itemObs(it)">{{
-                        itemObs(it)
-                      }}</q-item-label>
+                      <q-item-label
+                        caption
+                        class="pedido-item-obs"
+                        v-if="itemObs(it)"
+                      >
+                        {{ itemObs(it) }}
+                      </q-item-label>
                     </q-item-section>
                     <q-item-section side>
                       <div class="text-body2">{{ itemPriceText(it) }}</div>
@@ -237,5 +241,9 @@ const emitModel = (v) => emit("update:modelValue", v);
   width: 100%;
   max-width: 980px;
   border-radius: 14px;
+}
+
+.pedido-item-obs {
+  white-space: pre-line;
 }
 </style>

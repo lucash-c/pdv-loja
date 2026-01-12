@@ -440,6 +440,10 @@ const formatOptionEntry = (entry) => {
       entry?.option_name ||
       entry?.title ||
       entry?.label ||
+      entry?.option_item?.name ||
+      entry?.optionItem?.name ||
+      entry?.product_option_item?.name ||
+      entry?.productOptionItem?.name ||
       null;
     const price =
       entry?.price ??
@@ -463,7 +467,14 @@ const formatOptionsGroup = (group) => {
 
   if (typeof group === "object") {
     const groupName =
-      group?.name || group?.option_name || group?.title || group?.label || null;
+      group?.name ||
+      group?.option_name ||
+      group?.title ||
+      group?.label ||
+      group?.option?.name ||
+      group?.option?.title ||
+      group?.option?.label ||
+      null;
     const groupItems =
       group?.items ||
       group?.itens ||
@@ -475,12 +486,15 @@ const formatOptionsGroup = (group) => {
       group?.items_selected ||
       group?.selected_options ||
       group?.selectedOptions ||
+      group?.option?.items ||
       [];
     const inlineItem =
       group?.item_name ||
       group?.itemName ||
       group?.item?.name ||
       group?.item?.title ||
+      group?.option_item?.name ||
+      group?.optionItem?.name ||
       null;
     const itemsText = Array.isArray(groupItems)
       ? groupItems.map(formatOptionEntry).filter(Boolean).join(", ")
@@ -556,9 +570,17 @@ const formatItemOptions = (it) => {
     it?.extras ||
     it?.option_items ||
     it?.selected_options ||
+    it?.options_text ||
+    it?.optionsText ||
+    it?.options_description ||
+    it?.optionsDescription ||
     null;
 
   if (!raw) return null;
+
+  if (typeof raw === "string" || typeof raw === "number") {
+    return String(raw);
+  }
 
   if (Array.isArray(raw)) {
     const hasFlatSelections = raw.some(

@@ -21,14 +21,20 @@ function escapeHtml(s) {
  * @param {function(object):number|string} helpers.itemQty
  * @param {function(object):string} helpers.itemName
  * @param {function(object):string|null} helpers.itemObs
+ * @param {function(object):string|null} helpers.itemOptions
  * @param {function(object):string} helpers.itemPriceText
  */
 function buildPrintHtml(p, helpers) {
   const items = helpers.pedidoItems?.(p) ?? [];
   const itemsHtml = items
     .map((it) => {
-      const obs = helpers.itemObs?.(it)
-        ? `<div class="muted">${escapeHtml(helpers.itemObs(it))}</div>`
+     const optionsText = helpers.itemOptions?.(it);
+      const obsText = helpers.itemObs?.(it);
+      const options = optionsText
+        ? `<div class="muted">${escapeHtml(optionsText)}</div>`
+        : "";
+      const obs = obsText
+        ? `<div class="muted">${escapeHtml(obsText)}</div>`
         : "";
       return `
         <div class="row">
@@ -36,6 +42,7 @@ function buildPrintHtml(p, helpers) {
             <div><strong>${escapeHtml(String(helpers.itemQty?.(it) ?? 1))}x</strong> ${escapeHtml(
         helpers.itemName?.(it) ?? "Item"
       )}</div>
+       ${options}
             ${obs}
           </div>
           <div class="col right">${escapeHtml(helpers.itemPriceText?.(it) ?? "")}</div>

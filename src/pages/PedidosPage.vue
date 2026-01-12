@@ -632,11 +632,8 @@ const formatItemOptions = (it) => {
   return null;
 };
 
-const itemObs = (it) => {
-  const obs = it?.notes || it?.obs || it?.observation || null;
-  const options = formatItemOptions(it);
-  return [options, obs].filter(Boolean).join("\n") || null;
-};
+const itemOptions = (it) => formatItemOptions(it);
+const itemObs = (it) => it?.notes || it?.obs || it?.observation || null;
 const itemPrice = (it) => it?.price || it?.unit_price || it?.valor || 0;
 const itemPriceText = (it) =>
   formatMoney(itemPrice(it) * Number(itemQty(it) || 1));
@@ -775,6 +772,7 @@ const onPrint = (p) => {
     itemQty,
     itemName,
     itemObs,
+    itemOptions,
     itemPriceText,
   };
   printPedidoUtil(p, { auto: false, helpers });
@@ -1000,6 +998,7 @@ const aceitar = async (p) => {
         itemQty,
         itemName,
         itemObs,
+        itemOptions,
         itemPriceText,
       };
       printPedidoUtil(updated, { auto: true, helpers });

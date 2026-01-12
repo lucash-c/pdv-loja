@@ -106,6 +106,13 @@
                       </q-item-label>
                       <q-item-label
                         caption
+                        class="pedido-item-options"
+                        v-if="itemOptions(it)"
+                      >
+                        {{ itemOptions(it) }}
+                      </q-item-label>
+                      <q-item-label
+                        caption
                         class="pedido-item-obs"
                         v-if="itemObs(it)"
                       >
@@ -218,6 +225,7 @@ defineProps({
   itemQty: { type: Function, required: true },
   itemName: { type: Function, required: true },
   itemObs: { type: Function, required: true },
+  itemOptions: { type: Function, required: true },
   itemPriceText: { type: Function, required: true },
 
   isAguardando: { type: Function, required: true },
@@ -244,6 +252,10 @@ const emitModel = (v) => emit("update:modelValue", v);
 }
 
 .pedido-item-obs {
+  white-space: pre-line;
+}
+
+.pedido-item-options {
   white-space: pre-line;
 }
 </style>

@@ -427,7 +427,112 @@ const itemName = (it) =>
   it?.produto?.name ||
   it?.produto_nome ||
   "Item";
-const itemObs = (it) => it?.notes || it?.obs || it?.observation || null;
+const formatOptionEntry = (entry) => {
+  if (entry == null) return null;
+  if (typeof entry === "string" || typeof entry === "number") {
+    return String(entry);
+  }
+
+  if (typeof entry === "object") {
+    const name =
+      entry?.name ||
+      entry?.item_name ||
+      entry?.option_name ||
+      entry?.title ||
+      entry?.label ||
+      null;
+    const price =
+      entry?.price ??
+      entry?.unit_price ??
+      entry?.valor ??
+      entry?.amount ??
+      null;
+    if (name && price) return `${name} (${formatMoney(price)})`;
+    return name || (price ? formatMoney(price) : null);
+  }
+
+  return null;
+};
+
+const formatOptionsGroup = (group) => {
+  if (group == null) return null;
+
+  if (typeof group === "string" || typeof group === "number") {
+    return String(group);
+  }
+
+  if (typeof group === "object") {
+    const groupName =
+      group?.name || group?.option_name || group?.title || group?.label || null;
+    const groupItems =
+      group?.items ||
+      group?.itens ||
+      group?.values ||
+      group?.options ||
+      group?.option_items ||
+      group?.selected_items ||
+      [];
+    const itemsText = Array.isArray(groupItems)
+      ? groupItems.map(formatOptionEntry).filter(Boolean).join(", ")
+      : formatOptionEntry(groupItems);
+    if (groupName && itemsText) return `${groupName}: ${itemsText}`;
+    return itemsText || groupName;
+  }
+
+  return null;
+};
+
+const formatItemOptions = (it) => {
+  const raw =
+    it?.options ||
+    it?.opcoes ||
+    it?.option_groups ||
+    it?.complementos ||
+    it?.adicionais ||
+    it?.addons ||
+    it?.extras ||
+    it?.option_items ||
+    it?.selected_options ||
+    null;
+
+  if (!raw) return null;
+
+  if (Array.isArray(raw)) {
+    return raw.map(formatOptionsGroup).filter(Boolean).join("\n");
+  }
+
+  if (typeof raw === "object") {
+    if (
+      raw?.name ||
+      raw?.option_name ||
+      raw?.title ||
+      raw?.label ||
+      raw?.items ||
+      raw?.itens ||
+      raw?.values
+    ) {
+      return formatOptionsGroup(raw);
+    }
+
+    return Object.entries(raw)
+      .map(([key, value]) => {
+        const valueText = Array.isArray(value)
+          ? value.map(formatOptionEntry).filter(Boolean).join(", ")
+          : formatOptionEntry(value);
+        return valueText ? `${key}: ${valueText}` : String(key);
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  return null;
+};
+
+const itemObs = (it) => {
+  const obs = it?.notes || it?.obs || it?.observation || null;
+  const options = formatItemOptions(it);
+  return [options, obs].filter(Boolean).join("\n") || null;
+};
 const itemPrice = (it) => it?.price || it?.unit_price || it?.valor || 0;
 const itemPriceText = (it) =>
   formatMoney(itemPrice(it) * Number(itemQty(it) || 1));
@@ -515,14 +620,41 @@ const columns = computed(() => [
 /**
  * UI actions
  */
-const openPedido = (p) => {
+const hydratePedidoItens = async (p) => {
+  if (!p || typeof pedidosStore.fetchPedidoById !== "function") return;
+  if (pedidoItems(p).length) return;
+
+  const refId = p?.id || p?.external_id;
+  if (!refId) return;
+
+  try {
+    const data = await pedidosStore.fetchPedidoById(refId);
+    const payload = data?.data || data?.pedido || data;
+    if (!payload) return;
+
+    const merged = { ...p, ...payload };
+    selectedPedido.value = merged;
+
+    const idx = pedidosStore.pedidos.findIndex(
+      (it) => it.id === p.id || it.external_id === p.external_id
+    );
+    if (idx >= 0) pedidosStore.pedidos[idx] = merged;
+  } catch (e) {
+    console.warn("Falha ao carregar itens do pedido", e);
+  }
+};
+
+const openPedido = async (p) => {
   selectedPedido.value = p;
   pedidoDialog.value = true;
+  await hydratePedidoItens(p);
 };
 
 const onWhatsApp = (p) => {
   const phone = customerPhone(p);
-  const msg = `Olá, aqui é da loja. Sobre o seu pedido ${displayId(p)}:`;
+  const msg = `Olá, aqui é da ${
+    authStore.selectedLoja?.name || "loja"
+  }. Sobre o seu pedido ${displayId(p)}:`;
   openWhatsApp({ phone, message: msg, countryCode: "55" });
 };
 

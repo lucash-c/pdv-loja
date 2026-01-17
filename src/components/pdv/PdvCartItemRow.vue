@@ -10,6 +10,16 @@
       <q-item-label v-if="optionsText" caption class="text-grey-7">
         {{ optionsText }}
       </q-item-label>
+      <q-input
+        :model-value="item.observation"
+        dense
+        borderless
+        autogrow
+        type="textarea"
+        placeholder="Observação do item"
+        class="q-mt-xs"
+        @update:model-value="(value) => emit('update-observation', { item, value })"
+      />
     </q-item-section>
 
     <q-item-section side class="items-end">
@@ -52,7 +62,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["increase", "decrease", "remove"]);
+const emit = defineEmits(["increase", "decrease", "remove", "update-observation"]);
 
 const formatMoney = (value) =>
   Number(value || 0).toLocaleString("pt-BR", {

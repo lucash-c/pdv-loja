@@ -23,6 +23,7 @@
           @increase="emit('increase', $event)"
           @decrease="emit('decrease', $event)"
           @remove="emit('remove', $event)"
+          @update-observation="emit('update-observation', $event)"
         />
       </q-list>
     </q-card-section>
@@ -52,7 +53,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["increase", "decrease", "remove"]);
+const emit = defineEmits(["increase", "decrease", "remove", "update-observation"]);
 
 const formattedTotal = computed(() =>
   Number(props.total || 0).toLocaleString("pt-BR", {

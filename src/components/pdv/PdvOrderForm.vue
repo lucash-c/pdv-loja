@@ -20,7 +20,7 @@
         outlined
         dense
         label="WhatsApp"
-        mask="+## (##) #####-####"
+        mask="(##) #####-####"
         @update:model-value="(value) => emit('update:customerWhatsapp', value)"
       />
 

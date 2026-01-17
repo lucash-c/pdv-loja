@@ -572,7 +572,7 @@ const canConfirmOptions = computed(() => !optionsLoading.value);
 const buildPayload = () => ({
   external_id: `PDV-${Date.now()}`,
   customer_name: orderForm.customerName || "Cliente balcão",
-  customer_whatsapp: orderForm.customerWhatsapp || undefined,
+  customer_whatsapp: "+55 " + orderForm.customerWhatsapp || undefined,
   delivery_address:
     orderForm.orderType === "entrega"
       ? orderForm.deliveryAddress || undefined

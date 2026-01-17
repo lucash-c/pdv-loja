@@ -19,7 +19,7 @@ export const useProdutosStore = defineStore('produtos', {
       this.loading = true
       try {
         const { data } = await api.get(
-          activeOnly ? '/api/products?active=true' : '/api/products'
+          activeOnly ? '/products?active=true' : '/products'
         )
         this.produtos = Array.isArray(data) ? data : []
       } finally {
@@ -28,50 +28,50 @@ export const useProdutosStore = defineStore('produtos', {
     },
 
     async getProdutoById(productId) {
-      const { data } = await api.get(`/api/products/${productId}`)
+      const { data } = await api.get(`/products/${productId}`)
       return data
     },
 
     async criarProduto(payload) {
-      const { data } = await api.post('/api/products', payload)
+      const { data } = await api.post('/products', payload)
       if (data) this.produtos.push(data)
       return data
     },
 
     async atualizarProduto(productId, payload) {
-      const { data } = await api.put(`/api/products/${productId}`, payload)
+      const { data } = await api.put(`/products/${productId}`, payload)
       this.produtos = this.produtos.map(p => (p.id === productId ? data : p))
       return data
     },
 
     async desativarProduto(productId) {
-      await api.delete(`/api/products/${productId}`)
+      await api.delete(`/products/${productId}`)
       this.produtos = this.produtos.filter(p => p.id !== productId)
     },
 
     // =========================
-    // OPÇÕES (DOC: /api/products/{productId}/options)
+    // OPÇÕES (DOC: /products/{productId}/options)
     // =========================
     async listarOpcoes(productId) {
-      const { data } = await api.get(`/api/products/${productId}/options`)
+      const { data } = await api.get(`/products/${productId}/options`)
       return Array.isArray(data) ? data : []
     },
 
     async criarOpcao(productId, payload) {
-      const { data } = await api.post(`/api/products/${productId}/options`, payload)
+      const { data } = await api.post(`/products/${productId}/options`, payload)
       return data
     },
 
     // =========================
-    // ITENS (DOC: /api/products/options/{optionId}/items)
+    // ITENS (DOC: /products/options/{optionId}/items)
     // =========================
     async listarItensOpcao(optionId) {
-      const { data } = await api.get(`/api/products/options/${optionId}/items`)
+      const { data } = await api.get(`/products/options/${optionId}/items`)
       return Array.isArray(data) ? data : []
     },
 
     async criarItemOpcao(optionId, payload) {
-      const { data } = await api.post(`/api/products/options/${optionId}/items`, payload)
+      const { data } = await api.post(`/products/options/${optionId}/items`, payload)
       return data
     }
   }

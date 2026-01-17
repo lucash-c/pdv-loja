@@ -1,17 +1,5 @@
 import { api } from 'src/boot/axios'
 
-async function requestWithFallback(primaryRequest, fallbackRequest) {
-  try {
-    return await primaryRequest()
-  } catch (error) {
-    const status = error?.response?.status
-    if (status === 404 && typeof fallbackRequest === 'function') {
-      return await fallbackRequest()
-    }
-    throw error
-  }
-}
-
 export default {
   // =========================
   // AUTH
@@ -77,11 +65,8 @@ export default {
     return api.post(`/api/lojas/${lojaId}/credits/add`, data)
   },
 
-  async consumeCreditos(lojaId, data) {
-    return requestWithFallback(
-      () => api.post(`/api/lojas/${lojaId}/credits/consume`, data),
-      () => api.post(`/lojas/${lojaId}/credits/consume`, data)
-    )
+  consumeCreditos(lojaId, data) {
+    return api.post(`/api/lojas/${lojaId}/credits/consume`, data)
   },
 
   // =========================
@@ -122,110 +107,68 @@ export default {
   // =========================
   // PRODUTOS
   // =========================
-  async getProdutos(params = {}) {
-    return requestWithFallback(
-      () => api.get('/api/products', { params }),
-      () => api.get('/products', { params })
-    )
+  getProdutos(params = {}) {
+    return api.get('/products', { params })
   },
 
-  async createProduto(data) {
-    return requestWithFallback(
-      () => api.post('/api/products', data),
-      () => api.post('/products', data)
-    )
+  createProduto(data) {
+    return api.post('/products', data)
   },
 
-  async getProdutoById(productId) {
-    return requestWithFallback(
-      () => api.get(`/api/products/${productId}`),
-      () => api.get(`/products/${productId}`)
-    )
+  getProdutoById(productId) {
+    return api.get(`/products/${productId}`)
   },
 
-  async updateProduto(productId, data) {
-    return requestWithFallback(
-      () => api.put(`/api/products/${productId}`, data),
-      () => api.put(`/products/${productId}`, data)
-    )
+  updateProduto(productId, data) {
+    return api.put(`/products/${productId}`, data)
   },
 
-  async deleteProduto(productId) {
-    return requestWithFallback(
-      () => api.delete(`/api/products/${productId}`),
-      () => api.delete(`/products/${productId}`)
-    )
+  deleteProduto(productId) {
+    return api.delete(`/products/${productId}`)
   },
 
   // =========================
   // OPÇÕES DO PRODUTO
   // =========================
-  async listOpcoesProduto(productId) {
-    return requestWithFallback(
-      () => api.get(`/api/products/${productId}/options`),
-      () => api.get(`/products/${productId}/options`)
-    )
+  listOpcoesProduto(productId) {
+    return api.get(`/products/${productId}/options`)
   },
 
-  async createOpcaoProduto(productId, data) {
-    return requestWithFallback(
-      () => api.post(`/api/products/${productId}/options`, data),
-      () => api.post(`/products/${productId}/options`, data)
-    )
+  createOpcaoProduto(productId, data) {
+    return api.post(`/products/${productId}/options`, data)
   },
 
-  async updateOpcaoProduto(productId, optionId, data) {
-    return requestWithFallback(
-      () => api.put(`/api/products/${productId}/options/${optionId}`, data),
-      () => api.put(`/products/${productId}/options/${optionId}`, data)
-    )
+  updateOpcaoProduto(productId, optionId, data) {
+    return api.put(`/products/${productId}/options/${optionId}`, data)
   },
 
-  async deleteOpcaoProduto(productId, optionId) {
-    return requestWithFallback(
-      () => api.delete(`/api/products/${productId}/options/${optionId}`),
-      () => api.delete(`/products/${productId}/options/${optionId}`)
-    )
+  deleteOpcaoProduto(productId, optionId) {
+    return api.delete(`/products/${productId}/options/${optionId}`)
   },
 
   // =========================
   // ITENS DA OPÇÃO
   // =========================
-  async listItensOpcao(optionId) {
-    return requestWithFallback(
-      () => api.get(`/products/options/${optionId}/items`),
-      () => api.get(`/options/${optionId}/items`)
-    )
+  listItensOpcao(optionId) {
+    return api.get(`/products/options/${optionId}/items`)
   },
 
-  async createItemOpcao(optionId, data) {
-    return requestWithFallback(
-      () => api.post(`/products/options/${optionId}/items`, data),
-      () => api.post(`/options/${optionId}/items`, data)
-    )
+  createItemOpcao(optionId, data) {
+    return api.post(`/products/options/${optionId}/items`, data)
   },
 
-  async updateItemOpcao(optionId, itemId, data) {
-    return requestWithFallback(
-      () => api.put(`/products/options/${optionId}/items/${itemId}`, data),
-      () => api.put(`/options/${optionId}/items/${itemId}`, data)
-    )
+  updateItemOpcao(optionId, itemId, data) {
+    return api.put(`/products/options/${optionId}/items/${itemId}`, data)
   },
 
-  async deleteItemOpcao(optionId, itemId) {
-    return requestWithFallback(
-      () => api.delete(`/products/options/${optionId}/items/${itemId}`),
-      () => api.delete(`/options/${optionId}/items/${itemId}`)
-    )
+  deleteItemOpcao(optionId, itemId) {
+    return api.delete(`/products/options/${optionId}/items/${itemId}`)
   },
 
   // =========================
   // CARDÁPIO PÚBLICO
   // =========================
-  async getPublicMenu(publicKey) {
-    return requestWithFallback(
-      () => api.get(`/api/public/menu/${publicKey}`),
-      () => api.get(`/public/menu/${publicKey}`)
-    )
+  getPublicMenu(publicKey) {
+    return api.get(`/public/menu/${publicKey}`)
   }
 }

@@ -43,6 +43,15 @@
               <q-item>
                 <q-item-section>
                   <q-item-label class="text-caption text-grey-7"
+                    >Tipo de pedido</q-item-label
+                  >
+                  <q-item-label>{{ orderTypeLabel(pedido) }}</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-item>
+                <q-item-section>
+                  <q-item-label class="text-caption text-grey-7"
                     >Horário</q-item-label
                   >
                   <q-item-label>{{
@@ -220,6 +229,7 @@ defineProps({
   formatDateTime: { type: Function, required: true },
   formatTotal: { type: Function, required: true },
   addressText: { type: Function, required: true },
+  orderTypeLabel: { type: Function, required: true },
 
   pedidoItems: { type: Function, required: true },
   itemQty: { type: Function, required: true },

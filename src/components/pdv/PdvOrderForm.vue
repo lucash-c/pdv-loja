@@ -24,10 +24,22 @@
         @update:model-value="(value) => emit('update:customerWhatsapp', value)"
       />
 
+      <q-select
+        :model-value="orderType"
+        outlined
+        dense
+        label="Tipo de pedido"
+        :options="orderTypeOptions"
+        emit-value
+        map-options
+        @update:model-value="(value) => emit('update:orderType', value)"
+      />
+
       <q-input
         :model-value="deliveryAddress"
         outlined
         dense
+        :disable="deliveryDisabled"
         label="Endereço de entrega"
         type="textarea"
         @update:model-value="(value) => emit('update:deliveryAddress', value)"
@@ -68,6 +80,18 @@ defineProps({
     type: String,
     default: "",
   },
+  orderType: {
+    type: String,
+    default: "entrega",
+  },
+  orderTypeOptions: {
+    type: Array,
+    default: () => [],
+  },
+  deliveryDisabled: {
+    type: Boolean,
+    default: false,
+  },
   paymentMethod: {
     type: String,
     default: "",
@@ -86,6 +110,7 @@ const emit = defineEmits([
   "update:customerName",
   "update:customerWhatsapp",
   "update:deliveryAddress",
+  "update:orderType",
   "update:paymentMethod",
   "update:notes",
 ]);

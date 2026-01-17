@@ -120,6 +120,7 @@
       :format-date-time="formatDateTime"
       :format-total="formatTotal"
       :address-text="addressText"
+      :order-type-label="orderTypeLabel"
       :pedido-items="pedidoItems"
       :item-qty="itemQty"
       :item-name="itemName"
@@ -382,6 +383,23 @@ const formatMoney = (v) =>
 const pedidoTotal = (p) =>
   p?.total || p?.total_price || p?.amount_total || p?.valor_total || 0;
 const formatTotal = (p) => formatMoney(pedidoTotal(p));
+
+const orderTypeLabel = (p) => {
+  const raw =
+    p?.order_type ||
+    p?.orderType ||
+    p?.tipo_pedido ||
+    p?.tipo ||
+    p?.delivery_type ||
+    null;
+  const normalized = String(raw || "entrega").toLowerCase();
+  const labels = {
+    entrega: "Entrega",
+    retirada: "Retirada",
+    local: "Local",
+  };
+  return labels[normalized] || "Entrega";
+};
 
 const formatTime = (p) => {
   const c = createdAt(p);

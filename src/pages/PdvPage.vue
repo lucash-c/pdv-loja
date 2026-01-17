@@ -79,15 +79,19 @@
           @increase="increaseQty"
           @decrease="decreaseQty"
           @remove="removeFromCart"
+          @update-observation="updateItemObservation"
         />
 
         <PdvOrderForm
           v-model:customer-name="orderForm.customerName"
           v-model:customer-whatsapp="orderForm.customerWhatsapp"
           v-model:delivery-address="orderForm.deliveryAddress"
+          v-model:order-type="orderForm.orderType"
           v-model:payment-method="orderForm.paymentMethod"
           v-model:notes="orderForm.notes"
           :payment-options="paymentOptions"
+          :order-type-options="orderTypeOptions"
+          :delivery-disabled="orderForm.orderType !== 'entrega'"
         />
 
         <q-card class="q-mt-md">
@@ -143,6 +147,11 @@ const cartItems = ref([]);
 const submitLoading = ref(false);
 
 const paymentOptions = ["PIX", "Cartão", "Dinheiro", "Outro"];
+const orderTypeOptions = [
+  { label: "Entrega", value: "entrega" },
+  { label: "Retirada", value: "retirada" },
+  { label: "Local", value: "local" },
+];
 
 const optionsDialogOpen = ref(false);
 const optionsLoading = ref(false);
@@ -156,6 +165,7 @@ const orderForm = reactive({
   customerName: "",
   customerWhatsapp: "",
   deliveryAddress: "",
+  orderType: "entrega",
   paymentMethod: "PIX",
   notes: "",
 });
@@ -379,6 +389,7 @@ const addItemToCart = (item, selectedOptions = []) => {
     quantity: 1,
     options: selectedOptions,
     optionSignature: signature,
+    observation: "",
   });
 };
 
@@ -407,6 +418,13 @@ const decreaseQty = (item) => {
 
 const removeFromCart = (item) => {
   cartItems.value = cartItems.value.filter((it) => it.id !== item.id);
+};
+
+const updateItemObservation = ({ item, value }) => {
+  const target = cartItems.value.find((it) => it.id === item.id);
+  if (target) {
+    target.observation = value;
+  }
 };
 
 const buildOptionSignature = (options) => {
@@ -511,14 +529,19 @@ const buildPayload = () => ({
   external_id: `PDV-${Date.now()}`,
   customer_name: orderForm.customerName || "Cliente balcão",
   customer_whatsapp: orderForm.customerWhatsapp || undefined,
-  delivery_address: orderForm.deliveryAddress || undefined,
+  delivery_address:
+    orderForm.orderType === "entrega"
+      ? orderForm.deliveryAddress || undefined
+      : undefined,
   payment_method: orderForm.paymentMethod || "PIX",
   total: cartTotal.value,
   notes: orderForm.notes || undefined,
+  order_type: orderForm.orderType || "entrega",
   items: cartItems.value.map((item) => ({
     product_name: item.name,
     quantity: item.quantity,
     unit_price: item.unitPriceWithOptions ?? item.unitPrice,
+    observation: item.observation?.trim() || undefined,
     options: item.options?.map((opt) => ({
       option_id: opt.optionId,
       option_name: opt.optionName,
@@ -534,6 +557,7 @@ const resetForm = () => {
   orderForm.customerName = "";
   orderForm.customerWhatsapp = "";
   orderForm.deliveryAddress = "";
+  orderForm.orderType = "entrega";
   orderForm.notes = "";
   orderForm.paymentMethod = "PIX";
 };
@@ -582,4 +606,13 @@ onMounted(() => {
 watch(lojaPublicKey, (value) => {
   if (value) void loadMenu();
 });
+
+watch(
+  () => orderForm.orderType,
+  (value) => {
+    if (value !== "entrega") {
+      orderForm.deliveryAddress = "";
+    }
+  }
+);
 </script>

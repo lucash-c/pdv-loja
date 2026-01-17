@@ -31,7 +31,7 @@
             </div>
 
             <q-option-group
-              :type="option.type === 'single' ? 'radio' : 'checkbox'"
+              :type="isMultipleChoice(option) ? 'checkbox' : 'radio'"
               :options="option.items"
               :model-value="selectionValue(option)"
               @update:model-value="(value) => onSelectionChange(option, value)"
@@ -108,9 +108,18 @@ const close = () => {
   emit("update:modelValue", false);
 };
 
+const isMultipleChoice = (option) => {
+  if (!option) return true;
+  const max = option.max_choices;
+  if (max === null || max === undefined) return true;
+  const parsed = Number(max);
+  if (Number.isNaN(parsed)) return true;
+  return parsed > 1;
+};
+
 const selectionValue = (option) => {
   const value = props.selection?.[option.id];
-  if (option.type === "multiple") return Array.isArray(value) ? value : [];
+  if (isMultipleChoice(option)) return Array.isArray(value) ? value : [];
   return value ?? null;
 };
 

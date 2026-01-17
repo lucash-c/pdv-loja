@@ -232,10 +232,19 @@ const mapMenuItem = (item, index) => ({
   isActive: item?.is_active !== false && item?.active !== false,
 });
 
+const resolveChargeType = (value) => {
+  if (value === "sum") return "sum";
+  if (value === "highest") return "highest";
+  if (value === "average") return "average";
+  if (value === "single") return "highest";
+  if (value === "multiple") return "sum";
+  return "sum";
+};
+
 const normalizeOption = (option) => ({
   id: option?.id ?? option?._id ?? option?.option_id ?? null,
   name: option?.name ?? option?.title ?? "Opção",
-  type: option?.type ?? option?.option_type ?? "multiple",
+  chargeType: resolveChargeType(option?.type ?? option?.option_type),
   required: Boolean(option?.required ?? option?.is_required ?? false),
   min_choices: option?.min_choices ?? option?.minChoices ?? option?.min ?? null,
   max_choices: option?.max_choices ?? option?.maxChoices ?? option?.max ?? null,
@@ -367,6 +376,40 @@ const openOptionsDialog = async (item) => {
   }
 };
 
+const isMultipleChoice = (option) => {
+  if (!option) return true;
+  const max = option.max_choices;
+  if (max === null || max === undefined) return true;
+  const parsed = Number(max);
+  if (Number.isNaN(parsed)) return true;
+  return parsed > 1;
+};
+
+const calculateOptionsPrice = (selectedOptions = []) => {
+  const grouped = new Map();
+  selectedOptions.forEach((opt) => {
+    if (!grouped.has(opt.optionId)) {
+      grouped.set(opt.optionId, { chargeType: opt.chargeType, prices: [] });
+    }
+    grouped.get(opt.optionId).prices.push(Number(opt.price || 0));
+  });
+
+  let total = 0;
+  grouped.forEach(({ chargeType, prices }) => {
+    if (!prices.length) return;
+    if (chargeType === "highest") {
+      total += Math.max(...prices);
+      return;
+    }
+    if (chargeType === "average") {
+      total += prices.reduce((sum, price) => sum + price, 0) / prices.length;
+      return;
+    }
+    total += prices.reduce((sum, price) => sum + price, 0);
+  });
+  return total;
+};
+
 const addItemToCart = (item, selectedOptions = []) => {
   const signature = buildOptionSignature(selectedOptions);
   const existing = cartItems.value.find(
@@ -377,8 +420,8 @@ const addItemToCart = (item, selectedOptions = []) => {
     return;
   }
 
-  const unitPriceWithOptions =
-    item.price + selectedOptions.reduce((sum, opt) => sum + opt.price, 0);
+  const optionsPrice = calculateOptionsPrice(selectedOptions);
+  const unitPriceWithOptions = item.price + optionsPrice;
 
   cartItems.value.push({
     id: `${item.productId || item.id}-${signature || "base"}`,
@@ -437,7 +480,7 @@ const buildOptionSignature = (options) => {
 
 const handleSelectionChange = ({ option, value }) => {
   if (!option?.id) return;
-  if (option.type === "multiple") {
+  if (isMultipleChoice(option)) {
     const next = Array.isArray(value) ? value : [];
     if (option.max_choices && next.length > option.max_choices) {
       $q.notify({
@@ -462,7 +505,7 @@ const handleSelectionChange = ({ option, value }) => {
 const validateOptions = () => {
   for (const option of optionGroups.value) {
     const selection = optionSelections.value?.[option.id];
-    const values = option.type === "multiple" ? selection || [] : [selection];
+    const values = isMultipleChoice(option) ? selection || [] : [selection];
     const filled = values.filter(Boolean);
 
     if (option.required && filled.length === 0) {
@@ -491,7 +534,7 @@ const buildSelectedOptions = () => {
   optionGroups.value.forEach((option) => {
     const selection = selections[option.id];
     const ids =
-      option.type === "multiple"
+      isMultipleChoice(option)
         ? Array.isArray(selection)
           ? selection
           : []
@@ -508,6 +551,7 @@ const buildSelectedOptions = () => {
         itemId: optionItem.id,
         itemName: optionItem.name,
         price: Number(optionItem.price || 0),
+        chargeType: option.chargeType,
       });
     });
   });

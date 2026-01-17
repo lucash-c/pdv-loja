@@ -260,7 +260,7 @@
                   {{ option.name || "Opção" }}
                 </div>
                 <div class="text-caption text-grey-7">
-                  Tipo: {{ option.typeLabel }}
+                  Cobrança: {{ option.typeLabel }}
                   <span v-if="option.required"> • Obrigatória</span>
                   <span v-if="option.min_choices !== null">
                     • Mín. {{ option.min_choices }}
@@ -338,7 +338,7 @@
               option-value="value"
               emit-value
               map-options
-              label="Tipo"
+              label="Cobrança das opções"
               outlined
               dense
               class="q-mt-sm"
@@ -560,7 +560,7 @@ const form = ref({
 const optionForm = ref({
   id: null,
   name: "",
-  type: "multiple",
+  type: "sum",
   required: false,
   min_choices: null,
   max_choices: null,
@@ -582,8 +582,9 @@ const columns = [
 ];
 
 const optionTypeOptions = [
-  { label: "Escolha única", value: "single" },
-  { label: "Múltiplas escolhas", value: "multiple" },
+  { label: "Somar preços das opções", value: "sum" },
+  { label: "Somar somente o maior preço", value: "highest" },
+  { label: "Somar a média dos preços", value: "average" },
 ];
 
 const notify = ({ type = "info", message = "" } = {}) => {
@@ -609,15 +610,18 @@ const normalizeProduct = (p) => {
 };
 
 const getOptionTypeLabel = (type) => {
-  if (type === "single") return "Escolha única";
-  if (type === "multiple") return "Múltiplas escolhas";
+  if (type === "sum") return "Somar preços das opções";
+  if (type === "highest") return "Somar somente o maior preço";
+  if (type === "average") return "Somar a média dos preços";
+  if (type === "single") return "Somar somente o maior preço";
+  if (type === "multiple") return "Somar preços das opções";
   return type || "Não informado";
 };
 
 const normalizeOption = (option) => ({
   id: option?.id ?? option?._id ?? option?.option_id ?? null,
   name: option?.name ?? option?.title ?? "",
-  type: option?.type ?? option?.option_type ?? "multiple",
+  type: option?.type ?? option?.option_type ?? "sum",
   typeLabel: getOptionTypeLabel(option?.type ?? option?.option_type),
   required: Boolean(option?.required ?? option?.is_required ?? false),
   min_choices:
@@ -677,7 +681,7 @@ const resetOptionForm = () => {
   optionForm.value = {
     id: null,
     name: "",
-    type: "multiple",
+    type: "sum",
     required: false,
     min_choices: null,
     max_choices: null,
@@ -715,7 +719,7 @@ const openOptionForm = (option = null) => {
     optionForm.value = {
       id: option.id,
       name: option.name,
-      type: option.type || "multiple",
+      type: option.type || "sum",
       required: Boolean(option.required),
       min_choices: option.min_choices ?? null,
       max_choices: option.max_choices ?? null,

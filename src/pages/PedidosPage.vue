@@ -125,6 +125,7 @@
       :item-qty="itemQty"
       :item-name="itemName"
       :item-obs="itemObs"
+      :item-options="itemOptions"
       :item-price-text="itemPriceText"
       :is-aguardando="isAguardando"
       :is-em-preparo="isEmPreparo"
@@ -188,7 +189,7 @@
 
 <script setup>
 import { LocalStorage, useQuasar } from "quasar";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, toRaw, watch } from "vue";
 import apiService from "src/services/api";
 import { useAuthStore } from "src/stores/authStore";
 import { usePedidosStore } from "src/stores/pedidosStore";
@@ -268,18 +269,20 @@ const localKeys = new WeakMap();
 let localKeyIndex = 0;
 
 const getLocalKey = (p) => {
-  if (!p || typeof p !== "object") return `local-pedido-${String(p)}`;
-  if (!localKeys.has(p)) {
+  const raw = toRaw(p);
+  if (!raw || typeof raw !== "object") return `local-pedido-${String(raw)}`;
+  if (!localKeys.has(raw)) {
     localKeyIndex += 1;
-    localKeys.set(p, `local-pedido-${localKeyIndex}`);
+    localKeys.set(raw, `local-pedido-${localKeyIndex}`);
   }
-  return localKeys.get(p);
+  return localKeys.get(raw);
 };
 
 const pKey = (p) => {
-  const id = p?.id ?? p?.external_id ?? p?._id;
+  const raw = toRaw(p);
+  const id = raw?.id ?? raw?.external_id ?? raw?._id;
   if (id !== null && id !== undefined) return id;
-  return getLocalKey(p);
+  return getLocalKey(raw);
 };
 const createdAt = (p) =>
   p?.created_at || p?.createdAt || p?.created || p?.date || null;
@@ -679,9 +682,10 @@ const itemPriceText = (it) =>
  * Lista / filtros
  */
 const allPedidosRaw = computed(() =>
-  Array.isArray(pedidosStore.pedidos) ? pedidosStore.pedidos : []
+  Array.isArray(pedidosStore.pedidos)
+    ? pedidosStore.pedidos.filter((p) => p && typeof p === "object")
+    : []
 );
-
 const filteredBase = computed(() => {
   const q = String(search.value || "")
     .trim()

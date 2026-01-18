@@ -113,17 +113,54 @@ function buildPrintHtml(p, helpers) {
  * @param {boolean} options.auto
  * @param {object} options.helpers (mesmo formato do buildPrintHtml)
  */
-export function printPedido(pedido, { auto = true, helpers } = {}) {
+export function printPedido(pedido, { auto = true, helpers, notify } = {}) {
   if (!pedido) return false;
   if (!helpers) throw new Error("printPedido: helpers é obrigatório");
 
   const html = buildPrintHtml(pedido, helpers);
-  const w = window.open("", "_blank", "noopener,noreferrer,width=420,height=650");
-  if (!w) return false;
+  const notifyUser = (message) => {
+    if (typeof notify === "function") {
+      notify({ type: "negative", message });
+      return;
+    }
+    if (window?.$q?.notify) {
+      window.$q.notify({ type: "negative", message });
+      return;
+    }
+    window.alert?.(message);
+  };
+  const fallbackToLocation = () => {
+    notifyUser(
+      "Não foi possível abrir a janela de impressão. O conteúdo será exibido nesta aba."
+    );
+    try {
+      window.location.href = `data:text/html;charset=utf-8,${encodeURIComponent(
+        html
+      )}`;
+      return true;
+    } catch (err) {
+      console.warn("Falha ao fazer fallback para a impressão", err);
+      return false;
+    }
+  };
 
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
+  const w = window.open("", "_blank", "width=420,height=650");
+  if (!w) return fallbackToLocation();
+  try {
+    w.opener = null;
+  } catch (err) {
+    console.warn("Falha ao remover opener da janela de impressão", err);
+  }
+  if (!w.document) return fallbackToLocation();
+
+  try {
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  } catch (err) {
+    console.warn("Falha ao escrever conteúdo na janela de impressão", err);
+    return fallbackToLocation();
+  }
 
   if (auto) {
     setTimeout(() => {

@@ -147,6 +147,7 @@ const navItems = [
   { to: "/dashboard", icon: "dashboard", label: "Dashboard" },
   { to: "/pdv", icon: "point_of_sale", label: "PDV" },
   { to: "/pedidos", icon: "receipt_long", label: "Pedidos" },
+  { to: "/creditos", icon: "add_card", label: "Add Creditos" },
   { to: "/produtos", icon: "inventory_2", label: "Produtos" },
   { to: "/loja", icon: "store", label: "Loja" },
 ];

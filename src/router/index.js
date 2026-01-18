@@ -11,6 +11,7 @@ const PdvPage = () => import('src/pages/PdvPage.vue')
 const PedidosPage = () => import('src/pages/PedidosPage.vue')
 const ProdutosPage = () => import('src/pages/ProdutosPage.vue')
 const LojaPage = () => import('src/pages/LojaPage.vue')
+const CreditosPage = () => import('src/pages/CreditosPage.vue')
 const ErrorNotFound = () => import('src/pages/ErrorNotFound.vue')
 
 const routes = [
@@ -59,6 +60,12 @@ const routes = [
         path: 'loja',
         name: 'loja',
         component: LojaPage,
+        meta: { requiresStoreAuth: true }
+      },
+      {
+        path: 'creditos',
+        name: 'creditos',
+        component: CreditosPage,
         meta: { requiresStoreAuth: true }
       }
 

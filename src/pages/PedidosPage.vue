@@ -264,7 +264,23 @@ let nowTimer = null;
 /**
  * Helpers de pedido
  */
-const pKey = (p) => p?.id || p?.external_id || p?._id || JSON.stringify(p);
+const localKeys = new WeakMap();
+let localKeyIndex = 0;
+
+const getLocalKey = (p) => {
+  if (!p || typeof p !== "object") return `local-pedido-${String(p)}`;
+  if (!localKeys.has(p)) {
+    localKeyIndex += 1;
+    localKeys.set(p, `local-pedido-${localKeyIndex}`);
+  }
+  return localKeys.get(p);
+};
+
+const pKey = (p) => {
+  const id = p?.id ?? p?.external_id ?? p?._id;
+  if (id !== null && id !== undefined) return id;
+  return getLocalKey(p);
+};
 const createdAt = (p) =>
   p?.created_at || p?.createdAt || p?.created || p?.date || null;
 
@@ -670,7 +686,7 @@ const filteredBase = computed(() => {
   const q = String(search.value || "")
     .trim()
     .toLowerCase();
-  let list = allPedidosRaw.value;
+  let list = allPedidosRaw.value.filter((p) => p && typeof p === "object");
 
   if (onlyToday.value) list = list.filter(isToday);
 

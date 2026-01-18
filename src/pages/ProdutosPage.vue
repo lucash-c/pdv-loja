@@ -1,7 +1,10 @@
 <template>
   <q-page padding>
     <div class="row items-center q-mb-md">
-      <div class="text-h6">Produtos</div>
+      <div class="row items-center q-gutter-sm text-h6">
+        <q-icon name="inventory_2" />
+        <span>Produtos</span>
+      </div>
 
       <q-space />
 

@@ -1,7 +1,10 @@
 <template>
   <q-page padding>
     <div class="row items-center q-mb-md">
-      <div class="text-h6">Pedidos do Dia</div>
+      <div class="row items-center q-gutter-sm text-h6">
+        <q-icon name="receipt_long" />
+        <span>Pedidos do Dia</span>
+      </div>
 
       <q-space />
 
@@ -63,7 +66,10 @@
       <div v-for="col in columns" :key="col.key" class="col-12 col-md-4">
         <q-card>
           <q-card-section class="row items-center">
-            <div class="text-subtitle1 text-weight-medium">{{ col.title }}</div>
+            <div class="row items-center q-gutter-xs text-subtitle1 text-weight-medium">
+              <q-icon name="stacked_bar_chart" />
+              <span>{{ col.title }}</span>
+            </div>
             <q-space />
             <q-badge :color="col.countColor" outline>{{
               col.list.length

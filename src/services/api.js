@@ -139,11 +139,11 @@ export default {
   },
 
   updateOpcaoProduto(productId, optionId, data) {
-    return api.put(`/products/${productId}/options/${optionId}`, data)
+    return api.put(`/products/options/${optionId}`, data)
   },
 
   deleteOpcaoProduto(productId, optionId) {
-    return api.delete(`/products/${productId}/options/${optionId}`)
+    return api.delete(`/products/options/${optionId}`)
   },
 
   // =========================

@@ -54,6 +54,9 @@
     >
       <template #avatar><q-icon name="warning" /></template>
       Créditos insuficientes: recarregue para aceitar novos pedidos.
+      <template #action>
+        <q-btn flat color="primary" label="Add Creditos" to="/creditos" />
+      </template>
     </q-banner>
 
     <div class="row q-col-gutter-md">

@@ -1062,15 +1062,17 @@ const aceitar = async (p) => {
 const rejeitar = async (p) => {
   if (!p) return;
 
-  const ok = await $q
-    .dialog({
+  const ok = await new Promise((resolve) => {
+    $q.dialog({
       title: "Rejeitar pedido",
       message: `Deseja rejeitar o pedido ${displayId(p)}?`,
       cancel: true,
       persistent: true,
     })
-    .then(() => true)
-    .catch(() => false);
+      .onOk(() => resolve(true))
+      .onCancel(() => resolve(false))
+      .onDismiss(() => resolve(false));
+  });
 
   if (!ok) return;
 
@@ -1103,15 +1105,17 @@ const rejeitar = async (p) => {
 const despachar = async (p) => {
   if (!p) return;
 
-  const ok = await $q
-    .dialog({
+  const ok = await new Promise((resolve) => {
+    $q.dialog({
       title: "Despachar pedido",
       message: `Marcar o pedido ${displayId(p)} como despachado?`,
       cancel: true,
       persistent: true,
     })
-    .then(() => true)
-    .catch(() => false);
+      .onOk(() => resolve(true))
+      .onCancel(() => resolve(false))
+      .onDismiss(() => resolve(false));
+  });
 
   if (!ok) return;
 

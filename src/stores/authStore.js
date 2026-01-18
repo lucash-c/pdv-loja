@@ -125,6 +125,18 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('auth_selected_loja')
       localStorage.removeItem('auth_loja')
       localStorage.removeItem('auth_user_loja')
+    },
+
+    clearStoreSession() {
+      this.storeToken = null
+      this.selectedLoja = null
+      this.loja = null
+      this.userLoja = null
+
+      localStorage.removeItem('store_token')
+      localStorage.removeItem('auth_loja')
+      localStorage.removeItem('auth_selected_loja')
+      localStorage.removeItem('auth_user_loja')
     }
   },
 

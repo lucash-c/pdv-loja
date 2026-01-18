@@ -8,7 +8,40 @@ const api = axios.create({
   timeout: 15000
 })
 
-export default boot(() => {
+const getRequestPath = (error) => {
+  const requestUrl = error?.config?.url
+  if (!requestUrl) return ''
+  try {
+    const baseURL =
+      error?.config?.baseURL || api.defaults.baseURL || window.location.origin
+    return new URL(requestUrl, baseURL).pathname
+  } catch (e) {
+    return requestUrl
+  }
+}
+
+const isStoreEndpoint = (path, error) => {
+  if (!path) return false
+  const normalized = path.replace(/\/+$/, '')
+  if (
+    normalized === '/api/lojas/current' ||
+    normalized.startsWith('/api/store-settings') ||
+    /^\/api\/lojas\/[^/]+\/credits$/.test(normalized)
+  ) {
+    return true
+  }
+
+  const errorCode = error?.response?.data?.error || error?.response?.data?.code
+  if (typeof errorCode === 'string' && /loja|store/i.test(errorCode)) {
+    return true
+  }
+
+  return false
+}
+
+const isUserAuthEndpoint = (path) => path?.startsWith('/api/auth')
+
+export default boot(({ router }) => {
   api.interceptors.request.use((config) => {
     try {
       const pinia = getActivePinia()
@@ -40,7 +73,17 @@ export default boot(() => {
         const pinia = getActivePinia()
         if (pinia && error.response?.status === 401) {
           const authStore = useAuthStore(pinia)
-          authStore.logout()
+          const path = getRequestPath(error)
+
+          if (isStoreEndpoint(path, error)) {
+            authStore.clearStoreSession()
+
+            if (router?.currentRoute?.value?.name !== 'select-loja') {
+              router.replace({ name: 'select-loja' })
+            }
+          } else if (isUserAuthEndpoint(path)) {
+            authStore.logout()
+          }
         }
       } catch (e) {
         console.warn('Pinia não ativo no response interceptor', e)

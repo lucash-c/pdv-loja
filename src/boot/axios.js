@@ -16,6 +16,7 @@ const getRequestPath = (error) => {
       error?.config?.baseURL || api.defaults.baseURL || window.location.origin
     return new URL(requestUrl, baseURL).pathname
   } catch (e) {
+    console.log('Erro ao analisar URL no interceptor', e)
     return requestUrl
   }
 }

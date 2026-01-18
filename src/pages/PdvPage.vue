@@ -1,7 +1,10 @@
 <template>
   <q-page padding>
     <div class="row items-center q-mb-md">
-      <div class="text-h6">PDV</div>
+      <div class="row items-center q-gutter-sm text-h6">
+        <q-icon name="point_of_sale" />
+        <span>PDV</span>
+      </div>
       <q-space />
       <q-btn
         outline

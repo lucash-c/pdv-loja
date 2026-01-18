@@ -2,7 +2,10 @@
   <q-page padding>
     <div class="row items-center q-mb-md">
       <div>
-        <div class="text-h6">Loja</div>
+        <div class="row items-center q-gutter-sm text-h6">
+          <q-icon name="storefront" />
+          <span>Loja</span>
+        </div>
         <div class="text-caption text-grey-7">
           Gerencie redes sociais e configurações da loja.
         </div>

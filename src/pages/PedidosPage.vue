@@ -264,17 +264,20 @@ let nowTimer = null;
 /**
  * Helpers de pedido
  */
-const todayKey = () => {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-};
-
 const pKey = (p) => p?.id || p?.external_id || p?._id || JSON.stringify(p);
 const createdAt = (p) =>
   p?.created_at || p?.createdAt || p?.created || p?.date || null;
+
+const toLocalDate = (value) => {
+  if (!value) return null;
+  const dt = new Date(value);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+};
+
+const isSameLocalDay = (a, b) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
 
 const createdAtMs = (p) => {
   const c = createdAt(p);
@@ -285,9 +288,9 @@ const createdAtMs = (p) => {
 };
 
 const isToday = (p) => {
-  const c = createdAt(p);
-  if (!c) return true;
-  return String(c).startsWith(todayKey());
+  const dt = toLocalDate(createdAt(p));
+  if (!dt) return true;
+  return isSameLocalDay(dt, new Date());
 };
 
 const normalizeStatus = (s) =>

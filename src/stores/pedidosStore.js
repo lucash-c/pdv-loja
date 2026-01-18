@@ -1,7 +1,17 @@
 // src/stores/pedidosStore.js
 import { defineStore } from 'pinia'
 import { api } from 'src/boot/axios'
-import { format } from 'date-fns'
+
+const toLocalDate = (value) => {
+  if (!value) return null
+  const dt = new Date(value)
+  return Number.isNaN(dt.getTime()) ? null : dt
+}
+
+const isSameLocalDay = (a, b) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate()
 
 export const usePedidosStore = defineStore('pedidos', {
   state: () => ({
@@ -12,8 +22,11 @@ export const usePedidosStore = defineStore('pedidos', {
 
   getters: {
     pedidosHoje: (state) => {
-      const hoje = format(new Date(), 'yyyy-MM-dd')
-      return state.pedidos.filter(p => p.created_at?.startsWith(hoje))
+      const hoje = new Date()
+      return state.pedidos.filter(p => {
+        const createdAt = toLocalDate(p?.created_at)
+        return createdAt ? isSameLocalDay(createdAt, hoje) : false
+      })
     },
 
     pedidosEmAberto: (state) => state.pedidos.filter(p => p.status === 'aguardando aceite')
